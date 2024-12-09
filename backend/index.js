@@ -18,10 +18,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: [
-      "https://dashboard-tasks-seven.vercel.app/",
-      "http://localhost:5173",
-    ],
+    origin: ["https://dashboard-tasks-1erx.vercel.app"],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   })
