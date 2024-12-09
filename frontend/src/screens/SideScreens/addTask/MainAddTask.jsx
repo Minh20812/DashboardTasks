@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Transition, Listbox, RadioGroup } from "@headlessui/react";
 import { Fragment } from "react";
 import { useAddTaskMutation } from "../../../redux/api/taskApiSlice";
@@ -43,6 +43,7 @@ const MainAddTask = () => {
   const [addTask] = useAddTaskMutation();
   const [addLabel] = useAddLabelMutation();
   const [taskname, setTask] = useState("");
+  const taskNameRef = useRef(null);
   const [description, setDescription] = useState("");
   const [subtasks, setSubtasks] = useState([{ name: "" }]);
   const [duedate, setDuedate] = useState("");
@@ -59,6 +60,8 @@ const MainAddTask = () => {
   const [isAddingNewLabel, setIsAddingNewLabel] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [reminderError, setReminderError] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateReminder = (reminderDate, dueDate) => {
     if (!reminderDate || !dueDate) return true;
@@ -118,6 +121,7 @@ const MainAddTask = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     if (reminder && duedate && !validateReminder(reminder, duedate)) {
       setReminderError("Reminder time must be before due date");
@@ -170,6 +174,9 @@ const MainAddTask = () => {
       }, 3000);
     } catch (err) {
       console.log(err);
+      setErrorMessage("Failed to add task. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -199,6 +206,12 @@ const MainAddTask = () => {
     setSelectedLabels((prev) => [...prev, newLabelId]);
     setIsLabelModalOpen(false);
   };
+
+  useEffect(() => {
+    if (taskNameRef.current) {
+      taskNameRef.current.focus();
+    }
+  }, []);
 
   useEffect(() => {
     if (projects) {
@@ -231,68 +244,76 @@ const MainAddTask = () => {
   }
 
   return (
-    <div className="bg-gray-100 flex items-center justify-center">
-      <div className="bg-white shadow-lg rounded-lg p-8 w-full">
-        <h2 className="text-2xl font-semibold mb-6">Add New Task</h2>
+    <div className="bg-gray-100 p-4 flex justify-center">
+      <div className="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-screen-lg">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-6 text-center">
+          Add New Task
+        </h2>
 
         {/* Success Message */}
-
         {successMessage && (
-          <div className="mb-4 text-green-600">{successMessage}</div>
+          <div className="mb-4 text-center text-green-600">
+            {successMessage}
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="mb-4 text-center text-red-500">{errorMessage}</div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="lg:flex gap-10">
-            <div className=" gap-10">
-              {/* Task Name */}
-              <div className="mb-4 flex gap-4 ">
-                <label className="block text-sm font-medium text-gray-700">
-                  Task Name
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+            {/* First Column */}
+            <div className="col-span-1 sm:col-span-1 lg:col-span-2">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Task Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
+                  ref={taskNameRef}
                   value={taskname}
                   onChange={(e) => setTask(e.target.value)}
                   required
-                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className={`block w-full px-3 py-2 bg-white border ${
+                    !taskname ? "border-red-500" : "border-gray-300"
+                  } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                 />
               </div>
 
-              {/* Description */}
-              <div className="mb-4 flex gap-4 ">
-                <label className="block text-sm font-medium text-gray-700">
-                  Description
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   required
-                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className={`block w-full px-3 py-2 bg-white border ${
+                    !description ? "border-red-500" : "border-gray-300"
+                  } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                 />
               </div>
 
-              {/* Subtasks */}
-              <div className="mb-4 flex gap-4">
-                <label className="block text-sm font-medium text-gray-700">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Subtasks
                 </label>
-                <div className=" grid-cols-2">
-                  {subtasks.map((subtask, index) => (
-                    <input
-                      key={`subtask-${index}`}
-                      type="text"
-                      value={subtask.name}
-                      onChange={(e) => {
-                        const newSubtasks = [...subtasks];
-                        newSubtasks[index].name = e.target.value;
-                        setSubtasks(newSubtasks);
-                      }}
-                      placeholder={`Subtask ${index + 1}`}
-                      className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm mb-2"
-                    />
-                  ))}
-                </div>
+                {subtasks.map((subtask, index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    value={subtask.name}
+                    onChange={(e) => {
+                      const newSubtasks = [...subtasks];
+                      newSubtasks[index].name = e.target.value;
+                      setSubtasks(newSubtasks);
+                    }}
+                    placeholder={`Subtask ${index + 1}`}
+                    className="block w-full mb-2 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                ))}
                 <button
                   type="button"
                   onClick={handleAddSubtask}
@@ -302,17 +323,17 @@ const MainAddTask = () => {
                 </button>
               </div>
             </div>
-            <div className=" gap-10">
-              {/* Project */}
-              <div className="mb-4 flex gap-4">
-                <label className="block text-sm font-medium text-gray-700">
+
+            {/* Second Column */}
+            <div className="col-span-1">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Project
                 </label>
-
                 <select
                   value={isAddingNewProject ? "add-new" : selectedProject}
                   onChange={handleProjectChange}
-                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   required
                 >
                   <option value="" disabled>
@@ -323,70 +344,60 @@ const MainAddTask = () => {
                       {project.projectname}
                     </option>
                   ))}
-
-                  <option value="add-new" onClick={() => openProjectModal()}>
-                    Add New Project
-                  </option>
+                  <option value="add-new">Add New Project</option>
                 </select>
               </div>
 
-              {/* Priority */}
-              <div className="mb-4 flex gap-4">
-                <label className="block text-sm font-medium text-gray-700">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Priority
                 </label>
-                <RadioGroup value={priority} onChange={setPriority}>
-                  <div className="flex gap-4">
-                    {priorities.map((prio) => (
-                      <RadioGroup.Option
-                        key={prio.value}
-                        value={prio}
-                        className="cursor-pointer"
-                      >
-                        {({ active, checked }) => (
-                          <span
-                            className={`py-2 px-4 rounded-lg border ${
-                              checked
-                                ? "bg-indigo-600 text-white"
-                                : "bg-white border-gray-300 text-gray-900"
-                            }`}
-                          >
-                            {prio.name}
-                          </span>
-                        )}
-                      </RadioGroup.Option>
-                    ))}
-                  </div>
-                </RadioGroup>
+                <div className="flex gap-2">
+                  {priorities.map((prio) => (
+                    <button
+                      key={prio.value}
+                      type="button"
+                      tabIndex="0"
+                      className={`py-1 px-4 rounded-lg text-sm ${
+                        priority.value === prio.value
+                          ? "bg-indigo-600 text-white"
+                          : "bg-gray-200"
+                      }`}
+                      onClick={() => setPriority(prio)}
+                    >
+                      {prio.name}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Due Date */}
-              <div className="mb-4 flex gap-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Due Date
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Due Date <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
                   value={duedate}
                   onChange={handleDueDateChange}
-                  required
-                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className={`block w-full px-3 py-2 bg-white border ${
+                    !duedate ? "border-red-500" : "border-gray-300"
+                  } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                 />
               </div>
 
               {/* Repeat Option */}
-              <div className="mb-4 flex gap-4">
-                <label className="block text-sm font-medium text-gray-700">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Repeat
                 </label>
                 <Listbox value={repeatOption} onChange={setRepeatOption}>
-                  <div className="relative mt-1">
+                  <div className="relative">
                     <Listbox.Button className="relative w-full py-2 pl-3 pr-10 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                       <span className="block truncate">
                         {repeatOption.name}
                       </span>
                       <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        {`v`}
+                        ▼
                       </span>
                     </Listbox.Button>
                     <Transition
@@ -406,7 +417,7 @@ const MainAddTask = () => {
                                   ? "text-white bg-indigo-600"
                                   : "text-gray-900"
                               }
-                          cursor-pointer select-none relative py-2 pl-10 pr-4`
+                              cursor-pointer select-none relative py-2 pl-10 pr-4`
                             }
                           >
                             {({ selected }) => (
@@ -418,11 +429,6 @@ const MainAddTask = () => {
                                 >
                                   {option.name}
                                 </span>
-                                {selected ? (
-                                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
-                                    CheckIcon
-                                  </span>
-                                ) : null}
                               </>
                             )}
                           </Listbox.Option>
@@ -434,8 +440,8 @@ const MainAddTask = () => {
               </div>
 
               {/* Labels */}
-              <div className="mb-4 flex gap-4">
-                <label className="block text-sm font-medium text-gray-700">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Labels
                 </label>
                 <MultiSelectLabelDropdown
@@ -447,16 +453,16 @@ const MainAddTask = () => {
               </div>
 
               {/* Reminder */}
-              <div className="mb-4 flex gap-4">
-                <label className="block text-sm font-medium text-gray-700">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Start date
                 </label>
-                <div className="w-full">
+                <div>
                   <input
                     type="datetime-local"
                     value={reminder}
                     onChange={handleReminderChange}
-                    className={`mt-1 block w-full px-3 py-2 bg-white border ${
+                    className={`block w-full px-3 py-2 bg-white border ${
                       reminderError ? "border-red-500" : "border-gray-300"
                     } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
                   />
@@ -467,25 +473,25 @@ const MainAddTask = () => {
               </div>
 
               {/* Location */}
-              <div className="mb-4 flex gap-4">
-                <label className="block text-sm font-medium text-gray-700">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Location
                 </label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
             </div>
           </div>
-          {/* Submit */}
+
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 rounded-md shadow-sm hover:bg-indigo-700 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-2"
+            className="w-full mt-6 bg-indigo-600 text-white py-2 rounded-md shadow-sm hover:bg-indigo-700 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-2"
           >
-            Add Task
+            {isSubmitting ? "Adding Task..." : "Add Task"}
           </button>
         </form>
       </div>

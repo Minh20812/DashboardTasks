@@ -9,4 +9,4 @@ const apiSlice = createApi({
   endpoints: () => ({}),
 });
 
-export default apiSlice; // Ensure this is the default export
+export default apiSlice;

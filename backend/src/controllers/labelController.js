@@ -1,7 +1,6 @@
 import Label from "../models/LabelModel.js";
 import asyncHandler from "../middlewares/asyncHandler.js";
 
-// Helper function for checking required fields
 const validateLabelFields = (data) => {
   if (!data.labelname || !data.color) {
     throw new Error("Required fields are missing");
@@ -73,7 +72,6 @@ const updateLabelById = asyncHandler(async (req, res) => {
         .json({ message: `Label with ID ${req.params.id} not found` });
     }
 
-    // Update only the fields that are allowed to be updated
     label.labelname = req.body.labelname || label.labelname;
     label.color = req.body.color || label.color;
 

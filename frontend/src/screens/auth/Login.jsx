@@ -5,8 +5,6 @@ import Loader from "../../components/Loader";
 import { useLoginMutation } from "../../redux/api/userApiSlice";
 import { setCredentials } from "../../redux/feature/auth/authSlice";
 import { toast } from "react-toastify";
-import { Checkbox, Label, Field } from "@headlessui/react";
-import GoogleLogin from "./components/SocialLogin";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -33,7 +31,6 @@ const Login = () => {
     e.preventDefault();
     try {
       const res = await login({ email, password }).unwrap();
-      console.log(res);
       dispatch(setCredentials({ ...res }));
       navigate(redirect);
     } catch (err) {
@@ -42,91 +39,130 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <section className="pl-[10rem] flex flex-wrap">
-        <div className="mr-[4rem] mt-[5rem]">
-          <h1 className="text-2xl font-semibold mb-4">Sign In</h1>
+    <div className="min-h-screen flex items-center justify-center px-4 py-8 dark:bg-slate-900">
+      <div className="w-full max-w-md mx-auto">
+        <div className="bg-white dark:bg-slate-950 shadow-lg rounded-lg px-6 py-8 sm:px-10">
+          <div className="flex flex-col items-center mb-6">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <img
+                className="h-8 w-8 rounded-xl object-cover"
+                src="https://i.imgur.com/NOhGpvI.jpeg"
+                alt="Your Brand"
+              />
+              <h1 className="text-lg font-semibold dark:text-white">MINOVA</h1>
+            </div>
+            <h2 className="text-2xl font-bold text-center dark:text-white">
+              Sign in to your account
+            </h2>
+          </div>
 
-          <form onSubmit={submitHandler} className="container w-[40rem]">
-            <div className="my-[2rem]">
-              <label htmlFor="email" className="block text-sm font-medium">
-                Email Address
+          <form onSubmit={submitHandler} className="space-y-6">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Email address
               </label>
               <input
-                type="email"
                 id="email"
-                className="mt-1 p-2 border rounded w-full"
-                placeholder="Enter email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="example@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-3 py-2 border rounded-md 
+                  text-sm 
+                  dark:bg-slate-950 
+                  dark:text-white 
+                  dark:border-slate-600 
+                  focus:outline-none 
+                  focus:ring-2 
+                  focus:ring-orange-500 
+                  transition-all 
+                  duration-200"
               />
             </div>
 
-            <div className="mb-4">
-              <label htmlFor="password" className="block text-sm font-medium">
-                Password
-              </label>
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Password
+                </label>
+                <a
+                  href="#"
+                  className="text-sm text-orange-500 hover:text-orange-600 dark:text-orange-400"
+                >
+                  Forgot password?
+                </a>
+              </div>
               <input
-                type="password"
                 id="password"
-                className="mt-1 p-2 border rounded w-full"
-                placeholder="Enter password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="********"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-3 py-2 border rounded-md 
+                  text-sm 
+                  dark:bg-slate-950 
+                  dark:text-white 
+                  dark:border-slate-600 
+                  focus:outline-none 
+                  focus:ring-2 
+                  focus:ring-orange-500 
+                  transition-all 
+                  duration-200"
               />
             </div>
 
-            <div className="flex justify-between">
-              <Field className="flex items-center gap-2">
-                <Checkbox
-                  // checked={enabled}
-                  // onChange={setEnabled}
-                  className="group block size-4 rounded border bg-white data-[checked]:bg-blue-500"
-                >
-                  {/* Checkmark icon */}
-                  <svg
-                    className="stroke-white opacity-0 group-data-[checked]:opacity-100"
-                    viewBox="0 0 14 14"
-                    fill="none"
-                  >
-                    <path
-                      d="M3 8L6 11L11 3.5"
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </Checkbox>
-                <Label> Remember for 30 days</Label>
-              </Field>
-              <div className="">
-                <Link to={"/"}>Forgot password?</Link>
-              </div>
+            <div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full flex justify-center py-2 px-4 
+                  border border-transparent 
+                  rounded-md 
+                  text-sm font-semibold 
+                  text-white 
+                  bg-orange-500 
+                  hover:bg-orange-600 
+                  focus:outline-none 
+                  focus:ring-2 
+                  focus:ring-offset-2 
+                  focus:ring-orange-500 
+                  transition-all 
+                  duration-200 
+                  disabled:opacity-50 
+                  disabled:cursor-not-allowed"
+              >
+                {isLoading ? "Signing In..." : "Sign In"}
+              </button>
             </div>
-
-            <button
-              disabled={isLoading}
-              type="submit"
-              className="bg-pink-500 text-white px-4 py-2 rounded cursor-pointer my-[1rem]"
-            >
-              {isLoading ? "Signing In..." : "Sign In"}
-            </button>
-
-            {isLoading && <Loader />}
           </form>
 
-          <GoogleLogin />
+          {isLoading && <Loader />}
 
-          <div className="mt-4">
-            <p>
-              New Customer?{" "}
-              <Link to={"/"} className="text-pink-500 hover:underline">
-                Register
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              First Time Here?{" "}
+              <Link
+                to={redirect || "/register"}
+                className="font-semibold text-orange-500 hover:text-orange-600"
+              >
+                Register Today!
               </Link>
             </p>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 };

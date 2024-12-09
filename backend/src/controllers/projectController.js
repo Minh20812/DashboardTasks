@@ -1,7 +1,6 @@
 import Project from "../models/ProjectModel.js";
 import asyncHandler from "../middlewares/asyncHandler.js";
 
-// Helper function for checking required fields
 const validateProjectFields = (data) => {
   if (!data.projectname || !data.info || !data.color) {
     throw new Error("Required fields are missing");
@@ -77,7 +76,6 @@ const updateProjectById = asyncHandler(async (req, res) => {
         .json({ message: `Project with ID ${req.params.id} not found` });
     }
 
-    // Update only the fields that are allowed to be updated
     project.projectname = req.body.projectname || project.projectname;
     project.info = req.body.info || project.info;
     project.color = req.body.color || project.color;

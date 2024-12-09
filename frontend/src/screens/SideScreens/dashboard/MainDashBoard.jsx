@@ -13,13 +13,21 @@ const CalendarView = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [tasksForSelectedDate, setTasksForSelectedDate] = useState([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  // Khi người dùng chọn một ngày
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handleDateChange = (date) => {
     setSelectedDate(date);
   };
 
-  // Lọc task theo ngày đã chọn
   useEffect(() => {
     if (tasks) {
       const tasksOnDate = tasks.filter((task) => {
@@ -41,63 +49,93 @@ const CalendarView = () => {
     setSelectedTask(null);
   };
 
-  // Hiển thị task cho ngày được chọn
   const renderTasksForSelectedDate = () => {
     if (tasksForSelectedDate.length > 0) {
       return (
-        <div className="task-list mt-4">
+        <div className="task-list mt-4 space-y-3">
           {tasksForSelectedDate.map((task) => (
             <div
               key={task._id}
-              className="p-4 bg-white rounded-lg shadow-lg mb-2"
+              className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
               onClick={() => openTaskModal(task)}
             >
-              <h3 className="text-xl font-semibold text-indigo-600">
+              <h3 className="text-lg md:text-xl font-semibold text-indigo-600 mb-1">
                 {task.taskname}
               </h3>
-              <p className="text-gray-600">
+              <p className="text-sm md:text-base text-gray-600">
                 <strong>Due Date:</strong>{" "}
                 {new Date(task.duedate).toLocaleDateString()}
               </p>
+              {task.priority && (
+                <span
+                  className={`inline-block mt-2 px-2 py-1 rounded-full text-xs ${
+                    task.priority === "high"
+                      ? "bg-red-200 text-red-800"
+                      : task.priority === "medium"
+                      ? "bg-yellow-200 text-yellow-800"
+                      : "bg-green-200 text-green-800"
+                  }`}
+                >
+                  {task.priority.charAt(0).toUpperCase() +
+                    task.priority.slice(1)}{" "}
+                  Priority
+                </span>
+              )}
             </div>
           ))}
         </div>
       );
     } else {
       return (
-        <p className="text-gray-600 text-center">No tasks for this date.</p>
+        <p className="text-gray-600 text-center py-4">
+          No tasks for this date.
+        </p>
       );
     }
   };
 
   return (
-    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
-      <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 bg-gray-50 min-h-screen">
+      <h2 className="text-xl md:text-3xl font-bold text-gray-800 mb-6 text-center">
         Calendar View
       </h2>
 
-      {/* Calendar Component */}
-      <Calendar
-        onChange={handleDateChange}
-        value={selectedDate}
-        className="bg-white p-4 rounded-lg shadow-lg"
-        tileContent={({ date, view }) => {
-          // Nếu đang xem theo tháng, hiển thị số lượng task trong ngày
-          if (view === "month" && tasks) {
-            const tasksOnDate = tasks.filter(
-              (task) =>
-                new Date(task.duedate).setHours(0, 0, 0, 0) ===
-                date.setHours(0, 0, 0, 0)
-            );
-            return tasksOnDate.length > 0 ? (
-              <button className=" rounded-full bg-green-500 p-1"></button>
-            ) : null;
-          }
-        }}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Calendar Section */}
+        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+          <Calendar
+            onChange={handleDateChange}
+            value={selectedDate}
+            className="w-full"
+            calendarClassName="w-full"
+            tileClassName="w-full"
+            tileContent={({ date, view }) => {
+              if (view === "month" && tasks) {
+                const tasksOnDate = tasks.filter(
+                  (task) =>
+                    new Date(task.duedate).setHours(0, 0, 0, 0) ===
+                    date.setHours(0, 0, 0, 0)
+                );
+                return tasksOnDate.length > 0 ? (
+                  <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-1"></div>
+                ) : null;
+              }
+            }}
+          />
+        </div>
 
-      {/* Task list for selected date */}
-      {renderTasksForSelectedDate()}
+        {/* Tasks Section */}
+        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
+          <h3 className="text-lg md:text-2xl font-semibold text-gray-800 mb-4 text-center">
+            Tasks on {selectedDate.toLocaleDateString()}
+          </h3>
+
+          <div className="overflow-auto h-72">
+            {" "}
+            {renderTasksForSelectedDate()}
+          </div>
+        </div>
+      </div>
 
       {/* Task Detail Modal */}
       {selectedTask && (

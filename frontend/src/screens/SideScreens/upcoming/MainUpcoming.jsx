@@ -53,7 +53,7 @@ const MainUpComing = () => {
 
   return (
     <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
-      <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">
+      <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 flex justify-center items-center">
         UpComing Tasks
       </h2>
       {tasks &&
@@ -95,10 +95,10 @@ const MainUpComing = () => {
                       : "No due date"}
                   </p>
                   <button
-                    className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-opacity-50"
+                    className="mt-4 w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-opacity-50"
                     onClick={(e) => handleCompleteTask(e, task._id)}
                   >
-                    Completed
+                    InComplete
                   </button>
                 </div>
               ))}

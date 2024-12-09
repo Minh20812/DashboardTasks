@@ -8,6 +8,7 @@ const MainCompleted = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [expiredTasks, setExpiredTasks] = useState([]);
+  const [visibleTasks, setVisibleTasks] = useState(10); // Số lượng nhiệm vụ hiển thị ban đầu
   const [updateTask] = useUpdateTaskMutation();
 
   useEffect(() => {
@@ -48,6 +49,10 @@ const MainCompleted = () => {
     }
   };
 
+  const loadMoreTasks = () => {
+    setVisibleTasks((prev) => prev + 10); // Tăng số lượng nhiệm vụ hiển thị thêm 10
+  };
+
   if (isLoading) {
     return <p className="text-center py-4">Loading tasks...</p>;
   }
@@ -60,50 +65,50 @@ const MainCompleted = () => {
     );
   }
 
+  const completedTasks = tasks
+    ? tasks.filter((task) => task.completed === true).slice(0, visibleTasks)
+    : [];
+
   return (
     <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
-      <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">
+      <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 flex justify-center items-center">
         Completed & Expired Tasks
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {tasks &&
-        tasks.length > 0 &&
-        tasks.filter((task) => task.completed === true).length > 0 ? (
+      <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-4 sm:gap-6 justify-center items-center">
+        {completedTasks.length > 0 ? (
           <div>
-            {tasks
-              .filter((task) => task.completed === true)
-              .map((task) => (
-                <div
-                  key={task._id}
-                  className={`p-4 sm:p-6 rounded-lg shadow-lg hover:cursor-pointer mt-3 ${
-                    task.completed ? "bg-green-500" : "bg-red-500"
-                  }`}
-                  onClick={() => openTaskModal(task)}
+            {completedTasks.map((task) => (
+              <div
+                key={task._id}
+                className={`p-4 sm:p-6 rounded-lg shadow-lg hover:cursor-pointer mt-3 ${
+                  task.completed ? "bg-green-100" : "bg-red-100"
+                }`}
+                onClick={() => openTaskModal(task)}
+              >
+                <h3 className="text-xl font-semibold text-black">
+                  {task.taskname}
+                </h3>
+                <p className="text-black">
+                  <strong>Due Date:</strong>
+                  {task.duedate
+                    ? new Date(task.duedate).toLocaleDateString()
+                    : "No due date"}
+                </p>
+                <button
+                  className="mt-4 w-full bg-green-600 text-black py-2 px-4 rounded-lg hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-opacity-50"
+                  onClick={(e) => handleUnCompleteTask(e, task._id)}
                 >
-                  <h3 className="text-xl font-semibold text-white">
-                    {task.taskname}
-                  </h3>
-                  <p className="text-white">
-                    <strong>Due Date:</strong>
-                    {task.duedate
-                      ? new Date(task.duedate).toLocaleDateString()
-                      : "No due date"}
-                  </p>
-                  <button
-                    className="mt-4 w-full bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-600 focus:ring-opacity-50"
-                    onClick={(e) => handleUnCompleteTask(e, task._id)}
-                  >
-                    Uncompleted
-                  </button>
-                </div>
-              ))}
+                  InComplete
+                </button>
+              </div>
+            ))}
           </div>
         ) : (
           <p className="text-gray-600 text-center">No tasks completed.</p>
         )}
 
         {expiredTasks.length === 0 ? (
-          <p>No expired tasks found</p>
+          <p className="text-gray-600 text-center">No expired tasks found</p>
         ) : (
           <div>
             {expiredTasks.map((task) => (
@@ -131,6 +136,15 @@ const MainCompleted = () => {
           </div>
         )}
       </div>
+      {completedTasks.length <
+        tasks.filter((task) => task.completed === true).length && (
+        <button
+          onClick={loadMoreTasks}
+          className="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50"
+        >
+          Load More
+        </button>
+      )}
       {selectedTask && (
         <TaskDetailModal
           isOpen={isModalOpen}

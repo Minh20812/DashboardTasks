@@ -12,27 +12,27 @@ import MainComplete from "../screens/SideScreens/complete/MainComplete";
 
 const MainRouter = () => {
   return (
-    <>
-      <BrowserRouter>
-        <div className="flex">
-          <div className=" w-1/6">
-            <SideComponent />
-          </div>
-          <div className=" flex justify-center items-center  h-full w-5/6">
-            <Routes>
-              <Route path="/" element={<MainDashboard />} />
-              <Route path="/addTask" element={<MainAddTask />} />
-              <Route path="/typingpractice" element={<TypingPractice />} />
-              <Route path="/inbox" element={<MainInbox />} />
-              <Route path="/today" element={<MainToday />} />
-              <Route path="/upcoming" element={<MainUpcoming />} />
-              <Route path="/filter&labels" element={<FilterLabels />} />
-              <Route path="/completed" element={<MainComplete />} />
-            </Routes>
-          </div>
+    <BrowserRouter>
+      <div className="flex flex-col">
+        {/* Sidebar */}
+        <div className="w-full sm:w-1/4 md:w-1/6 lg:w-1/6 border-r">
+          <SideComponent />
         </div>
-      </BrowserRouter>
-    </>
+        {/* Main Content */}
+        <div className="flex-1 flex justify-center items-center p-4 overflow-y-auto ">
+          <Routes>
+            <Route path="/" element={<MainDashboard />} />
+            <Route path="/addTask" element={<MainAddTask />} />
+            <Route path="/typingpractice" element={<TypingPractice />} />
+            <Route path="/inbox" element={<MainInbox />} />
+            <Route path="/today" element={<MainToday />} />
+            <Route path="/upcoming" element={<MainUpcoming />} />
+            <Route path="/filter&labels" element={<FilterLabels />} />
+            <Route path="/completed" element={<MainComplete />} />
+          </Routes>
+        </div>
+      </div>
+    </BrowserRouter>
   );
 };
 

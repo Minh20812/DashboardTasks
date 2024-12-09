@@ -11,18 +11,21 @@ const priorities = [
   { name: "High", value: "high" },
 ];
 
+const ITEMS_PER_PAGE = 10;
+
 const MainFilterAndLabels = () => {
   const { data: tasks, refetch } = useGetAllTasksQuery();
   const [selectedTask, setSelectedTask] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [updateTask] = useUpdateTaskMutation();
-  const [expiredTasks, setExpiredTasks] = useState([]);
 
-  // State cho các giá trị lọc
-  const [searchTerm, setSearchTerm] = useState(""); // Tìm kiếm taskname
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedLabel, setSelectedLabel] = useState("");
   const [selectedProject, setSelectedProject] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("");
+  const [selectedCompletedStatus, setSelectedCompletedStatus] = useState("");
+
+  const [visibleTasks, setVisibleTasks] = useState(ITEMS_PER_PAGE);
 
   const openTaskModal = (task) => {
     setSelectedTask(task);
@@ -34,7 +37,6 @@ const MainFilterAndLabels = () => {
     setSelectedTask(null);
   };
 
-  // Lọc task dựa trên Taskname, Label, Project, và Priority
   const filteredTasks = tasks
     ? tasks.filter((task) => {
         const matchSearchTerm = searchTerm
@@ -49,7 +51,20 @@ const MainFilterAndLabels = () => {
         const matchPriority = selectedPriority
           ? task.priority === selectedPriority
           : true;
-        return matchSearchTerm && matchLabel && matchProject && matchPriority;
+        const matchCompleted =
+          selectedCompletedStatus === ""
+            ? true
+            : selectedCompletedStatus === "completed"
+            ? task.completed === true
+            : task.completed === false;
+
+        return (
+          matchSearchTerm &&
+          matchLabel &&
+          matchProject &&
+          matchPriority &&
+          matchCompleted
+        );
       })
     : [];
 
@@ -81,24 +96,16 @@ const MainFilterAndLabels = () => {
     }
   };
 
-  useEffect(() => {
-    if (tasks) {
-      const now = Date.now();
-      const expired = tasks.filter((task) => {
-        const dueDate = Date.parse(task.duedate);
-        return dueDate && dueDate < now;
-      });
-      setExpiredTasks(expired);
-    }
-  }, [tasks]);
+  const handleLoadMore = () => {
+    setVisibleTasks((prev) => prev + ITEMS_PER_PAGE);
+  };
 
   return (
     <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
-      <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">
+      <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 flex justify-center items-center">
         Filter and Search Tasks
       </h2>
 
-      {/* Search Bar */}
       <div className="mb-6">
         <label className="block text-gray-600 font-semibold mb-2">
           Search by Taskname:
@@ -112,9 +119,22 @@ const MainFilterAndLabels = () => {
         />
       </div>
 
-      {/* Dropdown Filter Section */}
       <div className="flex flex-col sm:flex-row sm:space-x-4 mb-6">
-        {/* Filter by Label */}
+        <div className="mb-4 sm:mb-0">
+          <label className="block text-gray-600 font-semibold mb-2">
+            Filter by Status:
+          </label>
+          <select
+            className="border rounded-lg p-2 w-full"
+            value={selectedCompletedStatus}
+            onChange={(e) => setSelectedCompletedStatus(e.target.value)}
+          >
+            <option value="">All Status</option>
+            <option value="completed">Completed</option>
+            <option value="incomplete">Incomplete</option>
+          </select>
+        </div>
+
         <div className="mb-4 sm:mb-0">
           <label className="block text-gray-600 font-semibold mb-2">
             Filter by Label:
@@ -136,7 +156,6 @@ const MainFilterAndLabels = () => {
           </select>
         </div>
 
-        {/* Filter by Project */}
         <div className="mb-4 sm:mb-0">
           <label className="block text-gray-600 font-semibold mb-2">
             Filter by Project:
@@ -158,7 +177,6 @@ const MainFilterAndLabels = () => {
           </select>
         </div>
 
-        {/* Filter by Priority */}
         <div>
           <label className="block text-gray-600 font-semibold mb-2">
             Filter by Priority:
@@ -178,10 +196,9 @@ const MainFilterAndLabels = () => {
         </div>
       </div>
 
-      {/* Filtered Tasks */}
       {filteredTasks.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {filteredTasks.map((task) => (
+          {filteredTasks.slice(0, visibleTasks).map((task) => (
             <div
               key={task._id}
               className="p-4 sm:p-6 bg-white rounded-lg shadow-lg hover:cursor-pointer"
@@ -197,28 +214,21 @@ const MainFilterAndLabels = () => {
                   : "No due date"}
               </p>
 
-              {/* Render nút theo trạng thái completed */}
               {task.completed ? (
                 <button
-                  className="mt-4 w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-opacity-50"
-                  onClick={(e) => handleUnCompleteTask(e, task._id)}
-                >
-                  Uncompleted
-                </button>
-              ) : (
-                <button
                   className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-opacity-50"
-                  onClick={(e) => handleCompleteTask(e, task._id)}
+                  onClick={(e) => handleUnCompleteTask(e, task._id)}
                 >
                   Completed
                 </button>
-              )}
-
-              {task.duedate && Date.parse(task.duedate) < Date.now() ? (
-                <button className="mt-4 w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-opacity-50">
-                  Expired
+              ) : (
+                <button
+                  className="mt-4 w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-opacity-50"
+                  onClick={(e) => handleCompleteTask(e, task._id)}
+                >
+                  InComplete
                 </button>
-              ) : null}
+              )}
             </div>
           ))}
         </div>
@@ -226,7 +236,17 @@ const MainFilterAndLabels = () => {
         <p className="text-gray-600 text-center">No tasks available.</p>
       )}
 
-      {/* Task Detail Modal */}
+      {filteredTasks.length > visibleTasks && (
+        <div className="flex justify-center mt-6">
+          <button
+            className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-500 focus:outline-none"
+            onClick={handleLoadMore}
+          >
+            Load More
+          </button>
+        </div>
+      )}
+
       {selectedTask && (
         <TaskDetailModal
           isOpen={isModalOpen}

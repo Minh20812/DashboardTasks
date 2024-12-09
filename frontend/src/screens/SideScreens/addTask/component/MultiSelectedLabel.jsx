@@ -8,7 +8,7 @@ const MultiSelectLabelDropdown = ({
   onAddNewLabel,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(""); // Thêm state cho thông báo lỗi
+  const [errorMessage, setErrorMessage] = useState("");
   const dropdownRef = useRef(null);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
@@ -34,14 +34,13 @@ const MultiSelectLabelDropdown = ({
   }, []);
 
   const handleAddNewLabel = (newLabelName) => {
-    // Kiểm tra xem tên label đã tồn tại chưa
     const labelExists = labels.some(
       (label) => label.labelname === newLabelName
     );
 
     if (labelExists) {
-      setErrorMessage(`Label "${newLabelName}" already exists!`); // Đặt thông báo lỗi
-      setTimeout(() => setErrorMessage(""), 3000); // Xóa thông báo sau 3 giây
+      setErrorMessage(`Label "${newLabelName}" already exists!`);
+      setTimeout(() => setErrorMessage(""), 3000);
     } else {
       onAddNewLabel(newLabelName);
     }
@@ -72,7 +71,6 @@ const MultiSelectLabelDropdown = ({
         </svg>
       </button>
 
-      {/* Thông báo lỗi nếu có */}
       {errorMessage && (
         <div className="mt-2 text-red-600 text-sm">{errorMessage}</div>
       )}
@@ -105,7 +103,7 @@ const MultiSelectLabelDropdown = ({
             <button
               type="button"
               className="w-full text-left px-4 py-2 text-sm text-indigo-600 hover:bg-gray-100 focus:outline-none"
-              onClick={() => handleAddNewLabel("NewLabelName")} // Sử dụng hàm mới cho việc thêm label
+              onClick={() => handleAddNewLabel("NewLabelName")}
             >
               + Add New Label
             </button>
