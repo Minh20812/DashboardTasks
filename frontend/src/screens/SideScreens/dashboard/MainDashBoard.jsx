@@ -6,6 +6,7 @@ import {
   useUpdateTaskMutation,
 } from "../../../redux/api/taskApiSlice";
 import TaskDetailModal from "../today/component/TaskDetailModal";
+import enUS from "date-fns/locale/en-US";
 
 const CalendarView = () => {
   const { data: tasks, refetch } = useGetAllTasksQuery();
@@ -106,6 +107,7 @@ const CalendarView = () => {
           <Calendar
             onChange={handleDateChange}
             value={selectedDate}
+            locale="en-US"
             className="w-full"
             calendarClassName="w-full"
             tileClassName="w-full"
