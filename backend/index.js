@@ -19,8 +19,8 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "https://todolist-app-theta-five.vercel.app",
-      "https://todolist---app-2ac04.firebaseapp.com",
+      "https://dashboard-tasks-seven.vercel.app/",
+      "http://localhost:5173",
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,

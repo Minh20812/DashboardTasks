@@ -10,10 +10,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // "/api/": "https://todolist-app-d0wu.onrender.com",
-      // "/uploads/": "https://todolist-app-d0wu.onrender.com",
-      "/api/": "http://localhost:5000/",
-      "/uploads/": "http://localhost:5000/",
+      "/api/": "https://dashboardtasks.onrender.com",
+      "/uploads/": "https://dashboardtasks.onrender.com",
+      // "/api/": "http://localhost:5000/",
+      // "/uploads/": "http://localhost:5000/",
     },
   },
 });
